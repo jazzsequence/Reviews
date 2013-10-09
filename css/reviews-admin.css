@@ -1,0 +1,54 @@
+#reviews-details label {
+	font-weight: bold;
+	font-size: 1.0em;
+}
+
+#reviews-details .embed_code {
+	font-family: monospace;
+}
+
+#wp-tracklist-editor-container {
+	background: #fff;
+}
+
+#menu-posts-album-review .wp-menu-image {
+	background: none!important;
+}
+#menu-posts-album-review .wp-menu-image:before {
+	font-family: 'plague-fonts'!important;
+	content: "\e017";
+	font-size: 20px;
+	position: relative;
+	left: 5px;
+	top: 4px;
+	text-shadow: 1px 1px 0px #eee;
+	color: #aaa;
+}
+#menu-posts-album-review:hover .wp-menu-image:before {
+	color: #21759b;
+}
+.wp-has-current-submenu#menu-posts-album-review .wp-menu-image:before {
+	color: #eee;
+}
+.wp-has-current-submenu#menu-posts-album-review .wp-menu-image:before {
+	text-shadow: 1px 1px 0px #555;
+}
+div#icon-edit.icon32-posts-album-review {
+	background-image: none;
+}
+div#icon-edit.icon32-posts-album-review:after {
+	font-family: 'plague-fonts'!important;
+	content: "\e017";
+	color: #555;
+	font-size: 32px;
+	position: relative;
+	top: -5px;
+}
+
+.mp6 #adminmenu #menu-posts-album-review div.wp-menu-image:before {
+	font-family: 'plague-fonts'!important;
+	content: "\e017";
+	left: 0;
+	top: 0;
+	text-shadow: none;
+}
