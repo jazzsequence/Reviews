@@ -101,7 +101,7 @@ class Album_Reviews {
 			'publicly_queryable' => true,
 			'show_ui' => true,
 			'query_var' => true,
-			'rewrite' => array("slug" => "review"),
+			'rewrite' => array("slug" => "review/%artist%"),
 			'capability_type' => 'post',
 			'hierarchical' => false,
 			'menu_position' => null,
@@ -153,6 +153,14 @@ class Album_Reviews {
 		register_taxonomy( 'artist', array('album-review', 'releases'), array( 'hierarchical' => true, 'labels' => $artist_labels, 'query_var' => 'artist', 'rewrite' => array( 'slug' => 'artist' ) ) ); // this is the artist taxonomy for album reviews
 	}
 
+	public function filter_post_type_link($link, $post) {
+	    if ($post->post_type != 'album-review')
+	        return $link;
+
+	    if ($cats = get_the_terms($post->ID, 'artist'))
+	        $link = str_replace('%artist%', array_pop($cats)->slug, $link);
+	    return $link;
+	}
 
 	public function ratings() {
 		$ratings = array(
