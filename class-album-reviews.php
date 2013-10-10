@@ -58,7 +58,9 @@ class Album_Reviews {
 		//add_action( 'admin_head', array( $this, 'reviews_header' ) );
 		add_action( 'admin_menu', array( $this, 'custom_meta_boxes_reviews' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles') );
-
+		add_action( 'wp_enqueue_scripts', array( $this, 'public_styles' ) );
+		add_filter( 'post_type_link', array( $this, 'filter_post_type_link' ), 10, 2 );
+		add_filter( 'the_content', array( $this, 'filter_review_content' ), 1 );
 	}
 
 	/**
@@ -290,8 +292,132 @@ class Album_Reviews {
 		}
 	}
 
+	public function public_styles() {
+		wp_enqueue_style( 'plague-fonts', plugins_url( 'css/plague-fonts.css', __FILE__ ), array(), $this->version );
+	}
+
 	public function admin_styles() {
 		wp_enqueue_style( 'plague-fonts', plugins_url( 'css/plague-fonts.css', __FILE__ ), array(), $this->version );
 		wp_enqueue_style( 'reviews-admin-css', plugins_url( 'css/reviews-admin.css', __FILE__ ), array(), $this->version );
+	}
+
+	public function filter_review_content( $content ) {
+		global $post, $is_shortcode;
+
+		// get the artist(s)
+		$artists = get_the_terms( $post->ID, 'artist' );
+		$artist_list = null;
+		if ( $artists && !is_wp_error( $artists ) ) {
+			$artists_out = array();
+			foreach ( $artists as $artist ) {
+				$artists_out[] = $artist->name;
+			}
+			$count = 0;
+			foreach ( $artists_out as $out ) {
+				$artist_list .= $out;
+				$count++;
+				if ( count($artists_out) > 1 ) {
+					$artist_list .= ', ';
+				}
+			}
+			$artist_list = wp_kses_post( $artist_list );
+		}
+
+		// get the genres
+		$genres = get_the_terms( $post->ID, 'genre' );
+		$genre_list = null;
+		if ( $genres && !is_wp_error( $genres ) ) {
+			$genre_out = array();
+			foreach( $genres as $genre ) {
+				$genre_out[] = sprintf( '<a href="%s">%s</a>',
+					home_url() . '/?genre=' . $genre->slug,
+					$genre->name );
+			}
+			$count = 0;
+			foreach( $genre_out as $out ) {
+				$genre_list .= $out;
+				$count++;
+				if ( ( count( $genre_out ) > 1 ) && ( count( $genre_out ) != $count ) ) {
+					$genre_list .= ', ';
+				}
+			}
+			$genre_list = wp_kses_post( $genre_list );
+		}
+
+		// the artist for output
+		$the_artist = null;
+		if ( $artist_list ) {
+			$the_artist = '<div class="the_artist">';
+			$the_artist .= $artist_list;
+			$the_artist .= '</div>';
+		}
+
+		// get the rating
+		$the_rating = null;
+		if ( get_post_meta( $post->ID, 'review_rating', true ) ) {
+			$rating = get_post_meta( $post->ID, 'review_rating', true );
+			$ratings = $this->ratings();
+			$the_rating = '<div class="rating">';
+			$the_rating .= $ratings[$rating]['html'];
+			$the_rating .= '</div>';
+		}
+
+		// get the thumbnail
+		$thumbnail = null;
+		if ( has_post_thumbnail( $post->ID ) ) {
+			$the_thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'thumbnail' );
+			$the_full_thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'full' );
+			$thumbnail_url = $the_thumbnail['0'];
+			$thumbnail_full_url = $the_full_thumbnail['0'];
+
+			$thumbnail = '<div class="thumbnail alignleft">';
+			$thumbnail .= '<a href="'. htmlspecialchars( $thumbnail_full_url ) . '"><img src="' . $thumbnail_url . '" alt="' . $artist_list . ' - ' . get_the_title( $post->ID ) . '" /></a>';
+			$thumbnail .= '</div>';
+		}
+
+		// get the purchase link
+		$purchase_url = null;
+		if ( get_post_meta( $post->ID, 'url_to_buy', true ) ) {
+			$url_to_buy = get_post_meta( $post->ID, 'url_to_buy', true );
+			$purchase_url = '<div class="purchase-link">' . __( 'Purchase this album:' ) . ' ';
+			$purchase_url .= '<a href="' . htmlspecialchars( $url_to_buy ) . '" target="_blank">';
+			$purchase_url .= '<i class="icon-cart"></i>';
+			$purchase_url .= '</a></div>';
+		}
+
+		// get the embed code
+		$embed_code = null;
+		if ( get_post_meta( $post->ID, 'embed_code', true ) ) {
+			$embed = get_post_meta( $post->ID, 'embed_code', true );
+			$embed_code = '<div class="clear clearfix embed-code">';
+			$embed_code .= $embed;
+			$embed_code .= '</div>';
+		}
+
+		// get the genres
+		$the_genres = null;
+		if ( $genre_list ) {
+			$the_genres = '<div class="review-meta genres">';
+			$the_genres .= $genre_list;
+			$the_genres .= '</div>';
+		}
+
+		// get the track list
+		$the_tracklist = null;
+		if ( get_post_meta( $post->ID, 'tracklist', true ) ) {
+			$tracklist = get_post_meta( $post->ID, 'tracklist', true );
+			$the_tracklist = '<div class="tracklist">';
+			$the_tracklist .= wp_kses_post( $tracklist );
+			$the_tracklist .= '</div>';
+		}
+
+		$before_content = '<div class="review-entry">';
+		$after_content = '</div>';
+
+		if ( 'album-review' == get_post_type() && in_the_loop() && !$is_shortcode ) {
+			return $thumbnail . $the_artist . $the_rating . $before_content . $content . $after_content . $purchase_url . $the_tracklist . $embed_code . $the_genres;
+		} else {
+			return $content;
+		}
 	}
 }
