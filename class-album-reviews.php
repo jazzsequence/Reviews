@@ -305,43 +305,18 @@ class Album_Reviews {
 		global $post, $is_shortcode;
 
 		// get the artist(s)
-		$artists = get_the_terms( $post->ID, 'artist' );
-		$artist_list = null;
-		if ( $artists && !is_wp_error( $artists ) ) {
-			$artists_out = array();
-			foreach ( $artists as $artist ) {
-				$artists_out[] = $artist->name;
-			}
-			$count = 0;
-			foreach ( $artists_out as $out ) {
-				$artist_list .= $out;
-				$count++;
-				if ( count($artists_out) > 1 ) {
-					$artist_list .= ', ';
-				}
-			}
-			$artist_list = wp_kses_post( $artist_list );
+		if ( get_the_artist_list() ) {
+			$artist_list = get_the_artist_list();
 		}
 
 		// get the genres
-		$genres = get_the_terms( $post->ID, 'genre' );
-		$genre_list = null;
-		if ( $genres && !is_wp_error( $genres ) ) {
-			$genre_out = array();
-			foreach( $genres as $genre ) {
-				$genre_out[] = sprintf( '<a href="%s">%s</a>',
-					home_url() . '/?genre=' . $genre->slug,
-					$genre->name );
-			}
-			$count = 0;
-			foreach( $genre_out as $out ) {
-				$genre_list .= $out;
-				$count++;
-				if ( ( count( $genre_out ) > 1 ) && ( count( $genre_out ) != $count ) ) {
-					$genre_list .= ', ';
-				}
-			}
-			$genre_list = wp_kses_post( $genre_list );
+		if ( get_the_genres() ) {
+			$genre_list = get_the_genres();
+		}
+
+		// get the label(s)
+		if ( get_the_labels() ) {
+			$label_list = get_the_labels();
 		}
 
 		// the artist for output
@@ -394,12 +369,21 @@ class Album_Reviews {
 			$embed_code .= '</div>';
 		}
 
-		// get the genres
-		$the_genres = null;
-		if ( $genre_list ) {
-			$the_genres = '<div class="review-meta genres">';
-			$the_genres .= $genre_list;
-			$the_genres .= '</div>';
+		// get the review meta
+		$review_meta = null;
+		if ( $genre_list || $label_list ) {
+			$review_meta = '<div class="review-meta">';
+			if ( $label_list ) {
+				$review_meta .= '<span class="label">';
+				$review_meta .= $label_list;
+				$review_meta .= '</span><br />';
+			}
+			if ( $genre_list ) {
+				$review_meta .= '<span class="genres">';
+				$review_meta .= $genre_list;
+				$review_meta .= '</span>';
+			}
+			$review_meta .= '</div>';
 		}
 
 		// get the track list
@@ -414,8 +398,8 @@ class Album_Reviews {
 		$before_content = '<div class="review-entry">';
 		$after_content = '</div>';
 
-		if ( 'album-review' == get_post_type() && in_the_loop() && !$is_shortcode ) {
-			return $thumbnail . $the_artist . $the_rating . $before_content . $content . $after_content . $purchase_url . $the_tracklist . $embed_code . $the_genres;
+		if ( 'album-review' == get_post_type() && in_the_loop() && !$is_shortcode && is_singular() ) {
+			return $thumbnail . $the_artist . $the_rating . $before_content . $content . $after_content . $purchase_url . $the_tracklist . $embed_code . $review_meta;
 		} else {
 			return $content;
 		}
