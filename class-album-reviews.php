@@ -67,6 +67,9 @@ class Album_Reviews {
 		add_action( 'add_meta_boxes', array( $this, 'rebuild_thumbnail_metabox' ) );
 		add_filter( 'pre_get_posts', array( $this, 'modify_pre_get_posts' ) );
 		add_filter( 'the_title', array( $this, 'the_review_title' ), 20 );
+		// new custom columns
+		add_filter( 'manage_edit-album-review_columns', array( $this, 'edit_album_review_columns' ) );
+		add_action( 'manage_album-review_posts_custom_column', array( $this, 'manage_album_review_columns' ), 10, 2 );
 	}
 
 	/**
@@ -289,6 +292,103 @@ class Album_Reviews {
 			$query->set( 'post_type', array( 'post', 'album-review' ) );
 
 		return $query;
+	}
+
+	/**
+	 * New columns for album reviews
+	 *
+	 * @since 2.0.0
+	 * @author Chris Reynolds
+	 * @return 	$columns 	an array of column header values
+	 */
+	public function edit_album_review_columns( $columns ) {
+		$columns = array(
+			'cb' => '<input type="checkbox" />',
+			'title' => __( 'Album Title', 'plague-reviews' ),
+			'artist' => __( 'Artist', 'plague-reviews' ),
+			'genre' => __( 'Genres', 'plague-reviews' ),
+			'label' => __( 'Label', 'plague-reviews' )
+		);
+		return $columns;
+	}
+
+	/**
+	 * Data for new custom columsn
+	 *
+	 * @since 2.0.0
+	 * @author Chris Reynolds
+	 */
+	public function manage_album_review_columns( $column, $post_id ) {
+		global $post;
+
+		switch( $column ) {
+			// artist column
+			case 'artist' :
+				$terms = get_the_terms( $post_id, 'artist' );
+
+				// if artists were found
+				if ( !empty( $terms ) ) {
+					$out = array();
+
+					// now loop through the artist list and display each on
+					foreach ( $terms as $term ) {
+						$out[] = sprintf( '<a href="%s">%s</a>',
+							esc_url( add_query_arg( array( 'post_type' => $post->post_type, 'artist' => $term->slug ), 'edit.php' ) ),
+							esc_html( sanitize_term_field( 'name', $term->name, $term->term_id, 'artist', 'display' ) )
+						);
+					}
+
+					// join the terms and separate with a comma
+					echo join( ', ', $out );
+				} else {
+					_e( 'No artists found', 'plague-reviews' );
+				}
+				break;
+
+			case 'genre' :
+				$terms = get_the_terms( $post_id, 'genre' );
+
+				// if genres were found
+				if ( !empty( $terms ) ) {
+					$out = array();
+
+					// now loop through the genre list and display each on
+					foreach ( $terms as $term ) {
+						$out[] = sprintf( '<a href="%s">%s</a>',
+							esc_url( add_query_arg( array( 'post_type' => $post->post_type, 'genre' => $term->slug ), 'edit.php' ) ),
+							esc_html( sanitize_term_field( 'name', $term->name, $term->term_id, 'genre', 'display' ) )
+						);
+					}
+
+					// join the terms and separate with a comma
+					echo join( ', ', $out );
+				} else {
+					_e( 'No genres found', 'plague-reviews' );
+				}
+				break;
+
+			case 'label' :
+				$terms = get_the_terms( $post_id, 'label' );
+
+				// if labels were found
+				if ( !empty( $terms ) ) {
+					$out = array();
+
+					// now loop through the label list and display each on
+					foreach ( $terms as $term ) {
+						$out[] = sprintf( '<a href="%s">%s</a>',
+							esc_url( add_query_arg( array( 'post_type' => $post->post_type, 'label' => $term->slug ), 'edit.php' ) ),
+							esc_html( sanitize_term_field( 'name', $term->name, $term->term_id, 'label', 'display' ) )
+						);
+					}
+
+					// join the terms and separate with a comma
+					echo join( ', ', $out );
+				} else {
+					_e( 'No labels found', 'plague-reviews' );
+				}
+				break;
+		}
 	}
 
 	/**
