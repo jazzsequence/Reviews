@@ -65,6 +65,8 @@ class Album_Reviews {
 		add_action('admin_head-post-new.php', array($this, 'change_thumbnail_html'));
 		add_action('admin_head-post.php', array($this, 'change_thumbnail_html'));
 		add_action( 'add_meta_boxes', array( $this, 'rebuild_thumbnail_metabox' ) );
+		add_filter( 'pre_get_posts', array( $this, 'modify_pre_get_posts' ) );
+		add_filter( 'the_title', array( $this, 'the_review_title' ), 20 );
 	}
 
 	/**
@@ -274,6 +276,60 @@ class Album_Reviews {
 		 return str_replace(__('Set featured image'), __('Select Album Cover', 'plague-reviews'),$content);
 	}
 
+	/**
+	 * Add reviews to the home page
+	 *
+	 * @since 2.0.0
+	 * @author Justin Tadlock
+	 * @link http://justintadlock.com/archives/2010/02/02/showing-custom-post-types-on-your-home-blog-page
+	 * @return 	mixed 	returns modification to main query to include new post type
+	 */
+	public function modify_pre_get_posts( $query ) {
+		if ( is_home() && $query->is_main_query() )
+			$query->set( 'post_type', array( 'post', 'album-review' ) );
+
+		return $query;
+	}
+
+	/**
+	 * Alter the_title for review posts on the home page
+	 *
+	 * @since 2.0.0
+	 * @author Chris Reynolds
+	 * @return 	string 	returns a string to display before the title (e.g. Review: Artistname - Albumname)
+	 */
+	public function the_review_title( $title ) {
+		global $post;
+
+		if ( has_term( '', 'artist' ) && 'album-review' == get_post_type() && in_the_loop() && is_home() ) {
+			$album_artists = get_the_terms( $post->ID, 'artist' );
+			$artist_list = null;
+			if ( $album_artists && !is_wp_error( $album_artists ) ) {
+				$artist_out = array();
+				foreach ( $album_artists as $artist ) {
+					$artist_out[] = sprintf( $artist->name );
+				}
+				$count = 0;
+				foreach ( $artist_out as $out ) {
+					$artist_list .= $out;
+					$count++;
+					if ( count( $artist_out ) > 1 && count( $artist_out ) != $count ) {
+						$artist_list .= ', ';
+					}
+				}
+			}
+			if ( $artist_list ) {
+				$the_artist = $artist_list;
+			} else {
+				$the_artist = null;
+			}
+			$new_title = sprintf( __( 'Review: %s - %s', 'plague-reviews' ), $the_artist, $title );
+			return $new_title;
+		} else {
+			return $title;
+		}
+	}
+
 	/* When the post is saved, saves our product data */
 	public function reviews_save_product_postdata($post_id, $post) {
 		$nonce = isset( $_POST['reviews_noncename'] ) ? $_POST['reviews_noncename'] : 'all the pigs, all lined up';
@@ -351,16 +407,22 @@ class Album_Reviews {
 		// get the artist(s)
 		if ( get_the_artist_list() ) {
 			$artist_list = get_the_artist_list();
+		} else {
+			$artist_list = null;
 		}
 
 		// get the genres
 		if ( get_the_genres() ) {
 			$genre_list = get_the_genres();
+		} else {
+			$genre_list = null;
 		}
 
 		// get the label(s)
 		if ( get_the_labels() ) {
 			$label_list = get_the_labels();
+		} else {
+			$label_list = null;
 		}
 
 		$entry_open = '<div class="alignleft entry-content">';
