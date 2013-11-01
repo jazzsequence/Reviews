@@ -156,9 +156,9 @@ class Album_Reviews {
 			'add_new_item' => __( 'Add New Artist', 'plague-reviews' ),
 			'new_item_name' => __( 'New Artist Name', 'plague-reviews' ),
 		);
-		register_taxonomy( 'genre', array('album-review','releases'), array( 'hierarchical' => true, 'labels' => $genre_labels, 'query_var' => 'genre', 'rewrite' => array( 'slug' => 'genre' ) ) ); // this is the genre taxonomy for album reviews
+		register_taxonomy( 'genre', array('album-review','plague-release', 'releases'), array( 'hierarchical' => true, 'labels' => $genre_labels, 'query_var' => 'genre', 'rewrite' => array( 'slug' => 'genre' ) ) ); // this is the genre taxonomy for album reviews
 		register_taxonomy( 'label', 'album-review', array( 'hierarchical' => true, 'labels' => $label_uh_labels, 'query_var' => 'label', 'rewrite' => array( 'slug' => 'label' ) ) ); // this is the label taxonomy for album reviews
-		register_taxonomy( 'artist', array('album-review', 'releases'), array( 'hierarchical' => true, 'labels' => $artist_labels, 'query_var' => 'artist', 'rewrite' => array( 'slug' => 'artist' ) ) ); // this is the artist taxonomy for album reviews
+		register_taxonomy( 'artist', array('album-review', 'plague-release', 'releases'), array( 'hierarchical' => true, 'labels' => $artist_labels, 'query_var' => 'artist', 'rewrite' => array( 'slug' => 'artist' ) ) ); // this is the artist taxonomy for album reviews
 	}
 
 	public function filter_post_type_link($link, $post) {
