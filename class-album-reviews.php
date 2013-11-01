@@ -333,6 +333,9 @@ class Album_Reviews {
 			$label_list = get_the_labels();
 		}
 
+		$entry_open = '<div class="alignleft entry-content">';
+		$entry_close = '</div>';
+
 		// the artist for output
 		$the_artist = null;
 		if ( $artist_list ) {
