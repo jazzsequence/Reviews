@@ -116,11 +116,14 @@ class Album_Reviews {
 			'capability_type' => 'post',
 			'hierarchical' => false,
 			'menu_position' => null,
+			'has_archive' => true,
 			'supports' => array( 'title','editor','thumbnail' ),
 			'exclude_from_search' => false
 	  );
 
 	  register_post_type( 'album-review', $args );
+	  // flush rewrite rules when post type is registered
+	  flush_rewrite_rules();
 	}
 
 	public function review_taxonomies() {
