@@ -404,29 +404,16 @@ class Album_Reviews {
 	public function the_review_title( $title ) {
 		global $post;
 
-		if ( has_term( '', 'artist' ) && 'album-review' == get_post_type() && in_the_loop() && is_home() ) {
-			$album_artists = get_the_terms( $post->ID, 'artist' );
-			$artist_list = null;
-			if ( $album_artists && !is_wp_error( $album_artists ) ) {
-				$artist_out = array();
-				foreach ( $album_artists as $artist ) {
-					$artist_out[] = sprintf( $artist->name );
-				}
-				$count = 0;
-				foreach ( $artist_out as $out ) {
-					$artist_list .= $out;
-					$count++;
-					if ( count( $artist_out ) > 1 && count( $artist_out ) != $count ) {
-						$artist_list .= ', ';
-					}
-				}
+		if ( get_the_artist_list() && 'album-review' == get_post_type() && in_the_loop() && is_home() ) {
+			$the_artist = null;
+			if ( get_the_artist_list() ) {
+				$the_artist = get_the_artist_list();
 			}
-			if ( $artist_list ) {
-				$the_artist = $artist_list;
+			if ( $the_artist ) {
+				$new_title = sprintf( __( 'Review: %s - %s', 'plague-reviews' ), $the_artist, $title );
 			} else {
-				$the_artist = null;
+				$new_title = sprintf( __( 'Review: %s', 'plague-reviews' ), $title );
 			}
-			$new_title = sprintf( __( 'Review: %s - %s', 'plague-reviews' ), $the_artist, $title );
 			return $new_title;
 		} else {
 			return $title;
