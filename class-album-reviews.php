@@ -61,6 +61,10 @@ class Album_Reviews {
 		add_action( 'wp_enqueue_scripts', array( $this, 'public_styles' ) );
 		add_filter( 'post_type_link', array( $this, 'filter_post_type_link' ), 10, 2 );
 		add_filter( 'the_content', array( $this, 'filter_review_content' ), 1 );
+		// Rename "featured image"
+		add_action('admin_head-post-new.php', array($this, 'change_thumbnail_html'));
+		add_action('admin_head-post.php', array($this, 'change_thumbnail_html'));
+		add_action( 'add_meta_boxes', array( $this, 'rebuild_thumbnail_metabox' ) );
 	}
 
 	/**
@@ -242,6 +246,32 @@ class Album_Reviews {
 			)));
 		echo '<p><label for="embed_code">Player Embed Code</label><br />';
 		echo '<textarea class="embed_code widefat" rows="5" name="embed_code" />'.wp_kses(get_post_meta($post->ID, 'embed_code', true), $kses_allowed).'</textarea></p>';
+	}
+
+	public function rebuild_thumbnail_metabox() {
+		remove_meta_box( 'postimagediv', 'album-review', 'side' );
+    	add_meta_box('postimagediv', __('Album Cover', 'plague-reviews'), 'post_thumbnail_meta_box', 'album-review', 'side', 'default');
+	}
+
+	/**
+	 * Filter for the featured image post box
+	 *
+	 * @since 	2.0.0
+	 */
+	public function change_thumbnail_html( $content ) {
+	    if ( 'album-review' == get_post_type() )
+	      add_filter('admin_post_thumbnail_html', array($this,'do_thumb'));
+	}
+
+	/**
+	 * Replaces "Set featured image" with "Album Cover"
+	 *
+	 * @since 	2.0.0
+	 *
+	 * @return 	string 	returns the modified text
+	 */
+	public function do_thumb($content){
+		 return str_replace(__('Set featured image'), __('Select Album Cover', 'plague-reviews'),$content);
 	}
 
 	/* When the post is saved, saves our product data */
