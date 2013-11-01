@@ -222,6 +222,9 @@ class Album_Reviews {
 		}
 		echo '</select>';
 
+		echo '<p><label for="release_date">' . __( 'Album Release Date', 'plague-reviews' ) . '</label><br />';
+		echo '<input class="widefat" type="text" name="release_date" id="datepicker" value="' . wp_kses( get_post_meta( $post->ID, 'release_date', true ), array() ) . '" /></p>';
+
 		echo '<p><label for="url_to_buy">' . __( 'URL to purchase album', 'plague-reviews' ) . '</label><br />';
 		echo '<input class="widefat" type="text" name="url_to_buy" value="'.mysql_real_escape_string(get_post_meta($post->ID, 'url_to_buy', true)).'" /></p>';
 
@@ -258,7 +261,13 @@ class Album_Reviews {
 		}
 
 		/* ready our data for storage */
-		$meta_keys = array('tracklist' => 'text', 'embed_code' => 'embed','url_to_buy' => 'text', 'review_rating' => 'numeric');
+		$meta_keys = array(
+			'tracklist' => 'text',
+			'embed_code' => 'embed',
+			'url_to_buy' => 'text',
+			'review_rating' => 'numeric',
+			'release_date' => 'date'
+		);
 
 		/* Add values of $mydata as custom fields */
 		foreach ($meta_keys as $meta_key => $type) {
@@ -284,6 +293,9 @@ class Album_Reviews {
 						$value = wp_kses( $_POST[ $meta_key ], array() );
 					}
 				}
+				if ( $type == 'date' ) {
+					$value = date_i18n( get_option( 'date_format' ), strtotime( strip_tags( $_POST[ $meta_key ] ) ) );
+				}
 
 				update_post_meta( $post->ID, $meta_key, $value );
 			} else {
@@ -299,6 +311,8 @@ class Album_Reviews {
 	public function admin_styles() {
 		wp_enqueue_style( 'plague-fonts', plugins_url( 'css/plague-fonts.css', __FILE__ ), array(), $this->version );
 		wp_enqueue_style( 'reviews-admin-css', plugins_url( 'css/reviews-admin.css', __FILE__ ), array(), $this->version );
+		wp_enqueue_script( 'jquery-ui-datepicker' );
+		wp_enqueue_script( 'plague-reviews-js', plugins_url( 'js/admin.js', __FILE__ ), array( 'jquery-ui-datepicker' ), '1.0' );
 	}
 
 	public function filter_review_content( $content ) {
@@ -335,6 +349,14 @@ class Album_Reviews {
 			$the_rating = '<div class="rating">';
 			$the_rating .= $ratings[$rating]['html'];
 			$the_rating .= '</div>';
+		}
+
+		$the_date = null;
+		if ( get_post_meta( $post->ID, 'release_date', true ) ) {
+			$release_date = get_post_meta( $post->ID, 'release_date', true );
+			$the_date = '<div class="release-date">';
+			$the_date .= sprintf( '%1$s' . __( 'Release Date:', 'plague-reviews' ) . '%2$s %3$s', '<label for="release-date">', '</label>', strip_tags( $release_date ) );
+			$the_date .= '</div>';
 		}
 
 		// get the thumbnail
@@ -399,7 +421,7 @@ class Album_Reviews {
 		$after_content = '</div>';
 
 		if ( 'album-review' == get_post_type() && in_the_loop() && !$is_shortcode && is_singular() ) {
-			return $thumbnail . $the_artist . $the_rating . $before_content . $content . $after_content . $purchase_url . $the_tracklist . $embed_code . $review_meta;
+			return $thumbnail . $entry_open . $the_artist . $the_rating . $the_date . $before_content . $content . $after_content . $purchase_url . $the_tracklist . $entry_close . $embed_code . $review_meta;
 		} else {
 			return $content;
 		}
