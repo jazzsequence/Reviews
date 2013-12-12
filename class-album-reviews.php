@@ -492,7 +492,7 @@ class Album_Reviews {
 	}
 
 	public function filter_review_content( $content ) {
-		global $post, $is_shortcode;
+		global $post;
 
 		// get the artist(s)
 		if ( get_the_artist_list() ) {
@@ -605,7 +605,7 @@ class Album_Reviews {
 		$before_content = '<div class="review-entry">';
 		$after_content = '</div>';
 
-		if ( 'album-review' == get_post_type() && in_the_loop() && !$is_shortcode && is_singular() ) {
+		if ( 'album-review' == get_post_type() && in_the_loop() && is_singular() ) {
 			return $thumbnail . $entry_open . $the_artist . $the_rating . $the_date . $before_content . $content . $after_content . $purchase_url . $the_tracklist . $entry_close . $embed_code . $review_meta;
 		} else {
 			return $content;
