@@ -45,7 +45,7 @@ div#icon-edit.icon32-posts-album-review:after {
 	top: -5px;
 }
 
-.mp6 #adminmenu #menu-posts-album-review div.wp-menu-image:before {
+.branch-3-8 #adminmenu #menu-posts-album-review div.wp-menu-image:before {
 	font-family: 'plague-fonts'!important;
 	content: "\e017";
 	left: 0;
