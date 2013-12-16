@@ -15,7 +15,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-require_once( plugin_dir_path( __FILE__ ) . 'inc/functions.php' );
+require_once( plugin_dir_path( __FILE__ ) . 'inc/func.php' );
 require_once( plugin_dir_path( __FILE__ ) . 'class-album-reviews.php' );
 
 Album_Reviews::get_instance();
