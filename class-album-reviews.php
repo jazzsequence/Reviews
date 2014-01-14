@@ -162,9 +162,19 @@ class Album_Reviews {
 			'add_new_item' => __( 'Add New Artist', 'plague-reviews' ),
 			'new_item_name' => __( 'New Artist Name', 'plague-reviews' ),
 		);
-		register_taxonomy( 'genre', array('album-review','plague-release', 'releases'), array( 'hierarchical' => true, 'labels' => $genre_labels, 'query_var' => 'genre', 'rewrite' => array( 'slug' => 'genre' ) ) ); // this is the genre taxonomy for album reviews
+		// check for the genre taxonomy -- this is used in both releases and reviews
+		if ( !taxonomy_exists( 'genre' ) ) {
+			register_taxonomy( 'genre', array('album-review','plague-release', 'releases'), array( 'hierarchical' => true, 'labels' => $genre_labels, 'query_var' => 'genre', 'rewrite' => array( 'slug' => 'genre' ) ) ); // this is the genre taxonomy for album reviews
+		}
+		// check for the artist taxonomy -- this is used in both releases and reviews
+		if ( !taxonomy_exists( 'artist' ) ) {
+			register_taxonomy( 'artist', array('album-review', 'plague-release', 'releases'), array( 'hierarchical' => true, 'labels' => $artist_labels, 'query_var' => 'artist', 'rewrite' => array( 'slug' => 'artist' ) ) ); // this is the artist taxonomy for album reviews
+			if ( class_exists('Add_Taxonomy_To_Post_Permalinks') ) {
+				$album_taxonomy = new Add_Taxonomy_To_Post_Permalinks( 'artist' );
+			}
+		}
+		// the label taxonomy is only used in reviews, so we don't need to check if it exists
 		register_taxonomy( 'label', 'album-review', array( 'hierarchical' => true, 'labels' => $label_uh_labels, 'query_var' => 'label', 'rewrite' => array( 'slug' => 'label' ) ) ); // this is the label taxonomy for album reviews
-		register_taxonomy( 'artist', array('album-review', 'plague-release', 'releases'), array( 'hierarchical' => true, 'labels' => $artist_labels, 'query_var' => 'artist', 'rewrite' => array( 'slug' => 'artist' ) ) ); // this is the artist taxonomy for album reviews
 	}
 
 	public function filter_post_type_link($link, $post) {
